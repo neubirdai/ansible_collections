@@ -1,0 +1,514 @@
+{
+    "metadata": {
+        "namespace": "neubird",
+        "name": "aap",
+        "version": "1.0.0",
+        "license": [
+            "Apache-2.0"
+        ],
+        "description": "Intelligence gateway between Ansible Automation Platform and NeuBird AI. Makes any AAP job template AI-aware with reporting, safety tagging, context injection, pre-flight gating, and audit logging.\n",
+        "repository": "https://github.com/neubird-ai/ansible-collection",
+        "documentation": "https://github.com/neubird-ai/ansible-collection/blob/main/README.md",
+        "homepage": "https://neubird.ai",
+        "issues": "https://github.com/neubird-ai/ansible-collection/issues",
+        "authors": [
+            "NeuBird AI <support@neubird.ai>"
+        ],
+        "tags": [
+            "ai",
+            "automation",
+            "remediation",
+            "monitoring",
+            "neubird",
+            "aap"
+        ],
+        "license_file": null,
+        "readme": "README.md",
+        "dependencies": {}
+    },
+    "docs_blob": {
+        "collection_readme": {
+            "name": "README.md",
+            "html": "<h1>neubird.aap</h1>\n<p>Intelligence gateway between Ansible Automation Platform and NeuBird AI.</p>\n<h2>Requirements</h2>\n<ul>\n<li>ansible-core &gt;= 2.16.0</li>\n<li>Python &gt;= 3.9</li>\n</ul>\n<h2>Installation</h2>\n<pre><code>ansible-galaxy collection install neubird.aap\n</code></pre>\n<h2>Modules</h2>\n<table>\n<thead>\n<tr>\n<th>Module</th>\n<th>Description</th>\n</tr>\n</thead>\n\n<tr>\n<td><code>neubird.aap.report</code></td>\n<td>Report remediation results to NeuBird AI</td>\n</tr>\n<tr>\n<td><code>neubird.aap.tag_safe</code></td>\n<td>Mark a job template as safe for automated remediation</td>\n</tr>\n<tr>\n<td><code>neubird.aap.preflight</code></td>\n<td>Pre-flight safety checks before automated job execution</td>\n</tr>\n<tr>\n<td><code>neubird.aap.audit</code></td>\n<td>Write structured audit records for compliance</td>\n</tr>\n\n</table>\n<h2>Lookup Plugins</h2>\n<table>\n<thead>\n<tr>\n<th>Plugin</th>\n<th>Description</th>\n</tr>\n</thead>\n\n<tr>\n<td><code>neubird.aap.context</code></td>\n<td>Read NeuBird investigation context from job variables</td>\n</tr>\n\n</table>\n<h2>License</h2>\n<p>Apache-2.0</p>"
+        },
+        "documentation_files": [
+            {
+                "name": "context.md",
+                "html": "<h1>neubird.aap.context</h1>\n<p>Read NeuBird investigation context from AAP job variables.</p>\n<h2>Synopsis</h2>\n<p>When NeuBird AI triggers an AAP job it passes investigation context as <code>_neubird_context</code> in the job's extra vars. This lookup plugin makes that context available inside the playbook. When the job was not triggered by NeuBird, all keys return <code>null</code>.</p>\n<h2>Returns</h2>\n<table>\n<thead>\n<tr>\n<th>Key</th>\n<th>Type</th>\n<th>Description</th>\n</tr>\n</thead>\n\n<tr>\n<td><code>investigation_id</code></td>\n<td>str or null</td>\n<td>NeuBird investigation identifier</td>\n</tr>\n<tr>\n<td><code>severity</code></td>\n<td>str or null</td>\n<td>Severity level of the investigation</td>\n</tr>\n<tr>\n<td><code>affected_resource</code></td>\n<td>str or null</td>\n<td>Resource identifier that triggered the investigation</td>\n</tr>\n<tr>\n<td><code>triggered_by</code></td>\n<td>str or null</td>\n<td>Originator \u2014 <code>neubird_ai</code> when AI-triggered</td>\n</tr>\n\n</table>\n<h2>Example</h2>\n<pre><code>- name: Load NeuBird investigation context\n  set_fact:\n    neubird_ctx: \"{{ lookup('neubird.aap.context') }}\"\n\n- name: Use context in a task\n  neubird.aap.report:\n    investigation_id: \"{{ neubird_ctx.investigation_id | default(omit) }}\"\n    status: remediated\n</code></pre>"
+            },
+            {
+                "name": "report.md",
+                "html": "<h1>neubird.aap.report</h1>\n<p>Report remediation results to NeuBird AI.</p>\n<h2>Synopsis</h2>\n<p>Add this module near the end of any playbook NeuBird may trigger. It surfaces structured execution results that NeuBird reads back through its MCP connection to AAP to close an investigation.</p>\n<h2>Parameters</h2>\n<table>\n<thead>\n<tr>\n<th>Parameter</th>\n<th>Type</th>\n<th>Required</th>\n<th>Default</th>\n<th>Description</th>\n</tr>\n</thead>\n\n<tr>\n<td><code>investigation_id</code></td>\n<td>str</td>\n<td>no</td>\n<td>null</td>\n<td>NeuBird investigation ID</td>\n</tr>\n<tr>\n<td><code>status</code></td>\n<td>str</td>\n<td>yes</td>\n<td>\u2014</td>\n<td>One of: <code>remediated</code>, <code>failed</code>, <code>no_change</code></td>\n</tr>\n<tr>\n<td><code>changed_resources</code></td>\n<td>list[str]</td>\n<td>no</td>\n<td><code>[]</code></td>\n<td>Resource identifiers that were modified</td>\n</tr>\n<tr>\n<td><code>detail</code></td>\n<td>dict</td>\n<td>no</td>\n<td><code>{}</code></td>\n<td>Raw task result or structured detail</td>\n</tr>\n\n</table>\n<h2>Return Values</h2>\n<table>\n<thead>\n<tr>\n<th>Key</th>\n<th>Type</th>\n<th>Description</th>\n</tr>\n</thead>\n\n<tr>\n<td><code>neubird_report</code></td>\n<td>dict</td>\n<td>Structured report written to job output</td>\n</tr>\n\n</table>\n<h2>Example</h2>\n<pre><code>- name: Report remediation result to NeuBird\n  neubird.aap.report:\n    investigation_id: \"{{ neubird_ctx.investigation_id | default(omit) }}\"\n    status: remediated\n    changed_resources:\n      - \"sg-abc123\"\n    detail: \"{{ task_result }}\"\n</code></pre>"
+            },
+            {
+                "name": "tag_safe.md",
+                "html": "<h1>neubird.aap.tag_safe</h1>\n<p>Mark an AAP job template as safe for NeuBird automated remediation.</p>\n<h2>Synopsis</h2>\n<p>Run once per job template as an admin setup step. Stores NeuBird safety metadata in the template's <code>extra_vars</code> so NeuBird AI can discover via MCP which templates are approved for automated triggering and under what conditions.</p>\n<h2>Parameters</h2>\n<table>\n<thead>\n<tr>\n<th>Parameter</th>\n<th>Type</th>\n<th>Required</th>\n<th>Default</th>\n<th>Description</th>\n</tr>\n</thead>\n\n<tr>\n<td><code>controller_host</code></td>\n<td>str</td>\n<td>yes</td>\n<td>\u2014</td>\n<td>AAP controller base URL</td>\n</tr>\n<tr>\n<td><code>controller_token</code></td>\n<td>str</td>\n<td>yes</td>\n<td>\u2014</td>\n<td>AAP OAuth token (not logged)</td>\n</tr>\n<tr>\n<td><code>template_name</code></td>\n<td>str</td>\n<td>yes</td>\n<td>\u2014</td>\n<td>Name of the job template to tag</td>\n</tr>\n<tr>\n<td><code>environments</code></td>\n<td>list[str]</td>\n<td>no</td>\n<td><code>[]</code></td>\n<td>Environments where auto-run is approved. Omit = all.</td>\n</tr>\n<tr>\n<td><code>requires_approval_in</code></td>\n<td>list[str]</td>\n<td>no</td>\n<td><code>[]</code></td>\n<td>Environments requiring human approval</td>\n</tr>\n<tr>\n<td><code>max_auto_runs_per_hour</code></td>\n<td>int</td>\n<td>no</td>\n<td>null</td>\n<td>Rate limit for automated triggering</td>\n</tr>\n\n</table>\n<h2>Example</h2>\n<pre><code>- name: Mark template as safe for automated remediation\n  neubird.aap.tag_safe:\n    controller_host: \"https://aap.example.com\"\n    controller_token: \"{{ lookup('env', 'AAP_TOKEN') }}\"\n    template_name: \"Rotate IAM Key\"\n    environments: [dev, staging]\n    requires_approval_in: [prod]\n    max_auto_runs_per_hour: 5\n</code></pre>"
+            },
+            {
+                "name": "preflight.md",
+                "html": "<h1>neubird.aap.preflight</h1>\n<p>Run pre-flight safety checks before NeuBird-triggered jobs.</p>\n<h2>Synopsis</h2>\n<p>Place as the first task in any playbook tagged for automated remediation. Fails the play with a structured error NeuBird can parse via MCP if any check fails. Makes no changes to the system.</p>\n<h2>Parameters</h2>\n<table>\n<thead>\n<tr>\n<th>Parameter</th>\n<th>Type</th>\n<th>Required</th>\n<th>Default</th>\n<th>Description</th>\n</tr>\n</thead>\n\n<tr>\n<td><code>check_maintenance_window</code></td>\n<td>bool</td>\n<td>no</td>\n<td><code>false</code></td>\n<td>Fail if inside the defined maintenance window</td>\n</tr>\n<tr>\n<td><code>maintenance_window_start</code></td>\n<td>str</td>\n<td>no</td>\n<td>\u2014</td>\n<td>Window start in HH:MM UTC. Required if check enabled.</td>\n</tr>\n<tr>\n<td><code>maintenance_window_end</code></td>\n<td>str</td>\n<td>no</td>\n<td>\u2014</td>\n<td>Window end in HH:MM UTC. Required if check enabled.</td>\n</tr>\n<tr>\n<td><code>check_conflicting_jobs</code></td>\n<td>bool</td>\n<td>no</td>\n<td><code>false</code></td>\n<td>Fail if same template is already running</td>\n</tr>\n<tr>\n<td><code>controller_host</code></td>\n<td>str</td>\n<td>no</td>\n<td>\u2014</td>\n<td>AAP URL. Required if check_conflicting_jobs enabled.</td>\n</tr>\n<tr>\n<td><code>controller_token</code></td>\n<td>str</td>\n<td>no</td>\n<td>\u2014</td>\n<td>AAP OAuth token. Required if check_conflicting_jobs enabled.</td>\n</tr>\n<tr>\n<td><code>template_name</code></td>\n<td>str</td>\n<td>no</td>\n<td>\u2014</td>\n<td>Template to check. Required if check_conflicting_jobs enabled.</td>\n</tr>\n<tr>\n<td><code>target_host</code></td>\n<td>str</td>\n<td>no</td>\n<td>\u2014</td>\n<td>Hostname to verify is reachable on port 22</td>\n</tr>\n\n</table>\n<h2>Example</h2>\n<pre><code>- name: Run pre-flight safety checks\n  neubird.aap.preflight:\n    check_maintenance_window: true\n    maintenance_window_start: \"02:00\"\n    maintenance_window_end: \"04:00\"\n    target_host: \"{{ inventory_hostname }}\"\n</code></pre>"
+            },
+            {
+                "name": "audit.md",
+                "html": "<h1>neubird.aap.audit</h1>\n<p>Write a structured audit record for NeuBird-triggered remediation.</p>\n<h2>Synopsis</h2>\n<p>Writes a structured JSON audit record after a NeuBird-triggered remediation action. Supports stdout, syslog, and webhook destinations for integration with existing logging infrastructure.</p>\n<h2>Parameters</h2>\n<table>\n<thead>\n<tr>\n<th>Parameter</th>\n<th>Type</th>\n<th>Required</th>\n<th>Default</th>\n<th>Description</th>\n</tr>\n</thead>\n\n<tr>\n<td><code>action</code></td>\n<td>str</td>\n<td>yes</td>\n<td>\u2014</td>\n<td>Short action identifier (e.g., <code>iam_key_disabled</code>)</td>\n</tr>\n<tr>\n<td><code>triggered_by</code></td>\n<td>str</td>\n<td>yes</td>\n<td>\u2014</td>\n<td>Who triggered the action. Convention: <code>neubird_ai</code></td>\n</tr>\n<tr>\n<td><code>investigation_id</code></td>\n<td>str</td>\n<td>no</td>\n<td>null</td>\n<td>NeuBird investigation ID</td>\n</tr>\n<tr>\n<td><code>destination</code></td>\n<td>str</td>\n<td>no</td>\n<td><code>stdout</code></td>\n<td>One of: <code>stdout</code>, <code>syslog</code>, <code>webhook</code></td>\n</tr>\n<tr>\n<td><code>webhook_url</code></td>\n<td>str</td>\n<td>no</td>\n<td>\u2014</td>\n<td>Required when destination is <code>webhook</code></td>\n</tr>\n\n</table>\n<h2>Example</h2>\n<pre><code>- name: Write audit record\n  neubird.aap.audit:\n    action: \"iam_key_disabled\"\n    triggered_by: \"neubird_ai\"\n    investigation_id: \"{{ neubird_ctx.investigation_id | default(omit) }}\"\n    destination: syslog\n</code></pre>"
+            }
+        ],
+        "contents": [
+            {
+                "content_name": "context",
+                "content_type": "lookup",
+                "doc_strings": {
+                    "doc": {
+                        "author": [
+                            "NeuBird AI (@neubird-ai)"
+                        ],
+                        "collection": "neubird.aap",
+                        "description": [
+                            "Returns the NeuBird investigation context injected by NeuBird AI when triggering an AAP job. Falls back gracefully when the job was not triggered by NeuBird (all keys are null)."
+                        ],
+                        "filename": "/var/folders/71/_tcqs2451gz7750j1l0jl3jh0000gn/T/tmp9w3uo1ct/ansible_collections/neubird/aap/plugins/lookup/context.py",
+                        "name": "context",
+                        "plugin_name": "neubird.aap.context",
+                        "short_description": "Read NeuBird investigation context from AAP job variables",
+                        "version_added": "1.0.0",
+                        "version_added_collection": "neubird.aap"
+                    },
+                    "examples": "\n- name: Load NeuBird investigation context\n  set_fact:\n    neubird_ctx: \"{{ lookup('neubird.aap.context') }}\"\n\n- name: Use context downstream\n  debug:\n    msg: \"Remediating {{ neubird_ctx.affected_resource }} for investigation {{ neubird_ctx.investigation_id }}\"\n",
+                    "metadata": null,
+                    "return": [
+                        {
+                            "name": "_raw",
+                            "description": "NeuBird investigation context dict.",
+                            "elements": "dict",
+                            "returned": "always",
+                            "sample": [
+                                {
+                                    "affected_resource": "sg-abc123",
+                                    "investigation_id": "inv-1234",
+                                    "severity": "high",
+                                    "triggered_by": "neubird_ai"
+                                }
+                            ],
+                            "type": "list"
+                        }
+                    ]
+                },
+                "readme_file": null,
+                "readme_html": null
+            },
+            {
+                "content_name": "audit",
+                "content_type": "module",
+                "doc_strings": {
+                    "doc": {
+                        "author": [
+                            "NeuBird AI (@neubird-ai)"
+                        ],
+                        "collection": "neubird.aap",
+                        "description": [
+                            "Writes a structured audit record after NeuBird AI triggers a remediation action. Supports stdout, syslog, and webhook destinations.",
+                            "Satisfies compliance requirements for automated remediation in regulated environments."
+                        ],
+                        "filename": "/var/folders/71/_tcqs2451gz7750j1l0jl3jh0000gn/T/tmp9w3uo1ct/ansible_collections/neubird/aap/plugins/modules/audit.py",
+                        "has_action": false,
+                        "module": "audit",
+                        "options": [
+                            {
+                                "name": "action",
+                                "description": [
+                                    "Short identifier for the action taken (e.g., iam_key_disabled)."
+                                ],
+                                "required": true,
+                                "type": "str"
+                            },
+                            {
+                                "name": "destination",
+                                "choices": [
+                                    "stdout",
+                                    "syslog",
+                                    "webhook"
+                                ],
+                                "default": "stdout",
+                                "description": [
+                                    "Where to write the audit record."
+                                ],
+                                "required": false,
+                                "type": "str"
+                            },
+                            {
+                                "name": "investigation_id",
+                                "description": [
+                                    "NeuBird investigation ID."
+                                ],
+                                "required": false,
+                                "type": "str"
+                            },
+                            {
+                                "name": "triggered_by",
+                                "description": [
+                                    "Who or what triggered the action. Convention is neubird_ai."
+                                ],
+                                "required": true,
+                                "type": "str"
+                            },
+                            {
+                                "name": "webhook_url",
+                                "description": [
+                                    "Webhook URL to POST the audit record to. Required when destination is webhook."
+                                ],
+                                "required": false,
+                                "type": "str"
+                            }
+                        ],
+                        "plugin_name": "neubird.aap.audit",
+                        "short_description": "Write a structured audit record for NeuBird-triggered remediation",
+                        "version_added": "1.0.0",
+                        "version_added_collection": "neubird.aap"
+                    },
+                    "examples": "\n- name: Write audit record to syslog\n  neubird.aap.audit:\n    action: \"iam_key_disabled\"\n    triggered_by: \"neubird_ai\"\n    investigation_id: \"{{ neubird_ctx.investigation_id | default(omit) }}\"\n    destination: syslog\n\n- name: Write audit record to webhook\n  neubird.aap.audit:\n    action: \"sg_rule_removed\"\n    triggered_by: \"neubird_ai\"\n    destination: webhook\n    webhook_url: \"https://audit.example.com/events\"\n",
+                    "metadata": null,
+                    "return": [
+                        {
+                            "name": "audit_record",
+                            "description": "The audit record that was written.",
+                            "returned": "always",
+                            "sample": {
+                                "action": "iam_key_disabled",
+                                "investigation_id": "inv-1234",
+                                "schema_version": "1.0",
+                                "timestamp": "2026-05-23T14:00:00Z",
+                                "triggered_by": "neubird_ai"
+                            },
+                            "type": "dict"
+                        }
+                    ]
+                },
+                "readme_file": null,
+                "readme_html": null
+            },
+            {
+                "content_name": "preflight",
+                "content_type": "module",
+                "doc_strings": {
+                    "doc": {
+                        "author": [
+                            "NeuBird AI (@neubird-ai)"
+                        ],
+                        "collection": "neubird.aap",
+                        "description": [
+                            "Validates that conditions are safe before NeuBird auto-runs a job.",
+                            "Fails the play with a structured error NeuBird can parse via MCP.",
+                            "Place as the first task in any playbook tagged for automated remediation."
+                        ],
+                        "filename": "/var/folders/71/_tcqs2451gz7750j1l0jl3jh0000gn/T/tmp9w3uo1ct/ansible_collections/neubird/aap/plugins/modules/preflight.py",
+                        "has_action": false,
+                        "module": "preflight",
+                        "options": [
+                            {
+                                "name": "check_conflicting_jobs",
+                                "default": false,
+                                "description": [
+                                    "Fail if another job using the same template is currently running. Requires controller_host, controller_token, and template_name."
+                                ],
+                                "required": false,
+                                "type": "bool"
+                            },
+                            {
+                                "name": "check_maintenance_window",
+                                "default": false,
+                                "description": [
+                                    "Fail if current UTC time falls within the defined maintenance window."
+                                ],
+                                "required": false,
+                                "type": "bool"
+                            },
+                            {
+                                "name": "controller_host",
+                                "description": [
+                                    "AAP controller base URL. Required when check_conflicting_jobs is true."
+                                ],
+                                "required": false,
+                                "type": "str"
+                            },
+                            {
+                                "name": "controller_token",
+                                "description": [
+                                    "AAP controller OAuth token. Required when check_conflicting_jobs is true."
+                                ],
+                                "required": false,
+                                "type": "str"
+                            },
+                            {
+                                "name": "maintenance_window_end",
+                                "description": [
+                                    "End of maintenance window in HH:MM UTC format. Required when check_maintenance_window is true."
+                                ],
+                                "required": false,
+                                "type": "str"
+                            },
+                            {
+                                "name": "maintenance_window_start",
+                                "description": [
+                                    "Start of maintenance window in HH:MM UTC format. Required when check_maintenance_window is true."
+                                ],
+                                "required": false,
+                                "type": "str"
+                            },
+                            {
+                                "name": "target_host",
+                                "description": [
+                                    "Hostname or IP to verify is reachable on port 22 before proceeding."
+                                ],
+                                "required": false,
+                                "type": "str"
+                            },
+                            {
+                                "name": "template_name",
+                                "description": [
+                                    "Job template name to check for conflicts. Required when check_conflicting_jobs is true."
+                                ],
+                                "required": false,
+                                "type": "str"
+                            }
+                        ],
+                        "plugin_name": "neubird.aap.preflight",
+                        "short_description": "Run pre-flight safety checks before NeuBird-triggered jobs",
+                        "version_added": "1.0.0",
+                        "version_added_collection": "neubird.aap"
+                    },
+                    "examples": "\n- name: Run pre-flight safety checks\n  neubird.aap.preflight:\n    check_maintenance_window: true\n    maintenance_window_start: \"02:00\"\n    maintenance_window_end: \"04:00\"\n    check_conflicting_jobs: true\n    controller_host: \"https://aap.example.com\"\n    controller_token: \"{{ lookup('env', 'AAP_TOKEN') }}\"\n    template_name: \"Rotate IAM Key\"\n    target_host: \"{{ inventory_hostname }}\"\n",
+                    "metadata": null,
+                    "return": [
+                        {
+                            "name": "checks",
+                            "description": "Results of each check that was run.",
+                            "returned": "always",
+                            "sample": {
+                                "conflicting_jobs": "pass",
+                                "maintenance_window": "pass",
+                                "target_host": "pass"
+                            },
+                            "type": "dict"
+                        }
+                    ]
+                },
+                "readme_file": null,
+                "readme_html": null
+            },
+            {
+                "content_name": "report",
+                "content_type": "module",
+                "doc_strings": {
+                    "doc": {
+                        "author": [
+                            "NeuBird AI (@neubird-ai)"
+                        ],
+                        "collection": "neubird.aap",
+                        "description": [
+                            "Surfaces structured job execution results in a format NeuBird AI can read through its MCP connection to Ansible Automation Platform.",
+                            "Add this module near the end of any playbook NeuBird may trigger."
+                        ],
+                        "filename": "/var/folders/71/_tcqs2451gz7750j1l0jl3jh0000gn/T/tmp9w3uo1ct/ansible_collections/neubird/aap/plugins/modules/report.py",
+                        "has_action": false,
+                        "module": "report",
+                        "options": [
+                            {
+                                "name": "changed_resources",
+                                "default": [],
+                                "description": [
+                                    "List of resource identifiers that were modified."
+                                ],
+                                "elements": "str",
+                                "required": false,
+                                "type": "list"
+                            },
+                            {
+                                "name": "detail",
+                                "default": {},
+                                "description": [
+                                    "Raw task result or any structured detail to pass through."
+                                ],
+                                "required": false,
+                                "type": "dict"
+                            },
+                            {
+                                "name": "investigation_id",
+                                "description": [
+                                    "NeuBird investigation ID. If omitted the report is standalone."
+                                ],
+                                "required": false,
+                                "type": "str"
+                            },
+                            {
+                                "name": "status",
+                                "choices": [
+                                    "remediated",
+                                    "failed",
+                                    "no_change"
+                                ],
+                                "description": [
+                                    "Remediation outcome."
+                                ],
+                                "required": true,
+                                "type": "str"
+                            }
+                        ],
+                        "plugin_name": "neubird.aap.report",
+                        "short_description": "Report remediation results to NeuBird AI",
+                        "version_added": "1.0.0",
+                        "version_added_collection": "neubird.aap"
+                    },
+                    "examples": "\n- name: Report remediation result to NeuBird\n  neubird.aap.report:\n    investigation_id: \"{{ neubird_ctx.investigation_id | default(omit) }}\"\n    status: remediated\n    changed_resources:\n      - \"sg-abc123\"\n    detail: \"{{ remediation_result }}\"\n",
+                    "metadata": null,
+                    "return": [
+                        {
+                            "name": "neubird_report",
+                            "description": "The structured report written to job output.",
+                            "returned": "always",
+                            "sample": {
+                                "changed_resources": [
+                                    "sg-abc123"
+                                ],
+                                "detail": {},
+                                "investigation_id": "inv-1234",
+                                "schema_version": "1.0",
+                                "status": "remediated",
+                                "timestamp": "2026-05-23T14:00:00Z"
+                            },
+                            "type": "dict"
+                        }
+                    ]
+                },
+                "readme_file": null,
+                "readme_html": null
+            },
+            {
+                "content_name": "tag_safe",
+                "content_type": "module",
+                "doc_strings": {
+                    "doc": {
+                        "author": [
+                            "NeuBird AI (@neubird-ai)"
+                        ],
+                        "collection": "neubird.aap",
+                        "description": [
+                            "Stores NeuBird safety metadata in a job template's extra_vars so NeuBird AI can discover via MCP which templates are approved for automated triggering.",
+                            "Run once per template as an admin setup step, not inside a remediation playbook."
+                        ],
+                        "filename": "/var/folders/71/_tcqs2451gz7750j1l0jl3jh0000gn/T/tmp9w3uo1ct/ansible_collections/neubird/aap/plugins/modules/tag_safe.py",
+                        "has_action": false,
+                        "module": "tag_safe",
+                        "options": [
+                            {
+                                "name": "controller_host",
+                                "description": [
+                                    "AAP controller base URL."
+                                ],
+                                "required": true,
+                                "type": "str"
+                            },
+                            {
+                                "name": "controller_token",
+                                "description": [
+                                    "AAP controller OAuth token."
+                                ],
+                                "required": true,
+                                "type": "str"
+                            },
+                            {
+                                "name": "environments",
+                                "default": [],
+                                "description": [
+                                    "Environments where NeuBird may auto-run this template. Omit to allow all environments."
+                                ],
+                                "elements": "str",
+                                "required": false,
+                                "type": "list"
+                            },
+                            {
+                                "name": "max_auto_runs_per_hour",
+                                "default": null,
+                                "description": [
+                                    "Maximum automated runs NeuBird may trigger per hour. Omit for no limit."
+                                ],
+                                "required": false,
+                                "type": "int"
+                            },
+                            {
+                                "name": "requires_approval_in",
+                                "default": [],
+                                "description": [
+                                    "Environments where NeuBird must request human approval before running."
+                                ],
+                                "elements": "str",
+                                "required": false,
+                                "type": "list"
+                            },
+                            {
+                                "name": "template_name",
+                                "description": [
+                                    "Name of the AAP job template to tag."
+                                ],
+                                "required": true,
+                                "type": "str"
+                            }
+                        ],
+                        "plugin_name": "neubird.aap.tag_safe",
+                        "short_description": "Mark an AAP job template as safe for NeuBird automated remediation",
+                        "version_added": "1.0.0",
+                        "version_added_collection": "neubird.aap"
+                    },
+                    "examples": "\n- name: Mark template as safe for automated remediation\n  neubird.aap.tag_safe:\n    controller_host: \"https://aap.example.com\"\n    controller_token: \"{{ lookup('env', 'AAP_TOKEN') }}\"\n    template_name: \"Rotate IAM Key\"\n    environments:\n      - dev\n      - staging\n    requires_approval_in:\n      - prod\n    max_auto_runs_per_hour: 5\n",
+                    "metadata": null,
+                    "return": [
+                        {
+                            "name": "neubird_safe_tag",
+                            "description": "The NeuBird safety metadata written to the template extra_vars.",
+                            "returned": "always",
+                            "type": "dict"
+                        },
+                        {
+                            "name": "template_id",
+                            "description": "ID of the updated job template.",
+                            "returned": "always",
+                            "sample": 42,
+                            "type": "int"
+                        }
+                    ]
+                },
+                "readme_file": null,
+                "readme_html": null
+            }
+        ]
+    },
+    "contents": [
+        {
+            "name": "context",
+            "content_type": "lookup",
+            "description": "Read NeuBird investigation context from AAP job variables"
+        },
+        {
+            "name": "audit",
+            "content_type": "module",
+            "description": "Write a structured audit record for NeuBird-triggered remediation"
+        },
+        {
+            "name": "preflight",
+            "content_type": "module",
+            "description": "Run pre-flight safety checks before NeuBird-triggered jobs"
+        },
+        {
+            "name": "report",
+            "content_type": "module",
+            "description": "Report remediation results to NeuBird AI"
+        },
+        {
+            "name": "tag_safe",
+            "content_type": "module",
+            "description": "Mark an AAP job template as safe for NeuBird automated remediation"
+        }
+    ],
+    "custom_license": null,
+    "requires_ansible": ">=2.16.0",
+    "patterns": []
+}

@@ -1,0 +1,29 @@
+---
+- name: Test report module - remediated status
+  neubird.aap.report:
+    status: remediated
+    investigation_id: "test-inv-001"
+    changed_resources:
+      - "test-resource-1"
+  register: result
+
+- name: Verify report structure
+  ansible.builtin.assert:
+    that:
+      - result.changed == false
+      - result.neubird_report.status == "remediated"
+      - result.neubird_report.schema_version == "1.0"
+      - result.neubird_report.investigation_id == "test-inv-001"
+      - result.neubird_report.changed_resources == ["test-resource-1"]
+      - result.neubird_report.timestamp is defined
+
+- name: Test report module - no_change status
+  neubird.aap.report:
+    status: no_change
+  register: result_no_change
+
+- name: Verify no_change
+  ansible.builtin.assert:
+    that:
+      - result_no_change.neubird_report.status == "no_change"
+      - result_no_change.neubird_report.investigation_id is none

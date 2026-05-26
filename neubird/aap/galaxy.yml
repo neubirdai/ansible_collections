@@ -1,0 +1,30 @@
+namespace: neubird
+name: aap
+version: 1.0.0
+readme: README.md
+authors:
+  - NeuBird AI <support@neubird.ai>
+description: >
+  Intelligence gateway between Ansible Automation Platform and NeuBird AI.
+  Makes any AAP job template AI-aware with reporting, safety tagging,
+  context injection, pre-flight gating, and audit logging.
+license:
+  - Apache-2.0
+tags:
+  - ai
+  - automation
+  - remediation
+  - monitoring
+  - neubird
+  - aap
+repository: https://github.com/neubird-ai/ansible-collection
+documentation: https://github.com/neubird-ai/ansible-collection/blob/main/README.md
+homepage: https://neubird.ai
+issues: https://github.com/neubird-ai/ansible-collection/issues
+build_ignore:
+  - "*.tar.gz"
+  - ".git"
+  - ".gitignore"
+  - "docs/superpowers"
+  - "pytest.ini"
+  - "tests/output"
