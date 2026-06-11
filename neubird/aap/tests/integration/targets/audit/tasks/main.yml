@@ -1,0 +1,31 @@
+---
+- name: Test audit module - stdout destination
+  neubird.aap.audit:
+    action: "test_action"
+    triggered_by: "neubird_ai"
+    investigation_id: "test-inv-001"
+    destination: stdout
+  register: result
+
+- name: Verify audit record structure
+  ansible.builtin.assert:
+    that:
+      - result.changed == false
+      - result.audit_record.action == "test_action"
+      - result.audit_record.triggered_by == "neubird_ai"
+      - result.audit_record.investigation_id == "test-inv-001"
+      - result.audit_record.schema_version == "1.0"
+      - result.audit_record.timestamp is defined
+
+- name: Test audit check mode - no write occurs
+  neubird.aap.audit:
+    action: "test_action_check"
+    triggered_by: "neubird_ai"
+  check_mode: true
+  register: result_check
+
+- name: Verify check mode result
+  ansible.builtin.assert:
+    that:
+      - result_check.changed == false
+      - result_check.audit_record.action == "test_action_check"

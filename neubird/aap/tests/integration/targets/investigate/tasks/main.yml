@@ -1,0 +1,35 @@
+---
+- name: Trigger EKS node health investigation (fire-and-forget)
+  neubird.aap.investigate:
+    neubird_url: "{{ neubird_url }}"
+    neubird_username: "{{ neubird_username }}"
+    neubird_password: "{{ neubird_password }}"
+    neubird_project: "{{ neubird_project | default('Red Hat') }}"
+    context:
+      cluster: prod-eks-01
+      region: us-east-1
+      nodes:
+        - name: node-1
+          status: Ready
+        - name: node-2
+          status: Ready
+        - name: node-3
+          status: NotReady
+          condition: DiskPressure
+      pods_running: 47
+      pods_pending: 2
+    prompt_text: "Investigate the health of EKS nodes in this cluster"
+  register: investigation
+
+- name: Verify fire-and-forget returns session_uuid immediately
+  ansible.builtin.assert:
+    that:
+      - investigation.changed == false
+      - investigation.session_uuid is defined
+      - investigation.session_uuid | length > 0
+      - investigation.status is defined
+    fail_msg: "investigate module did not return expected fields: {{ investigation }}"
+
+- name: Display session UUID for follow-up
+  ansible.builtin.debug:
+    msg: "Investigation triggered. Session UUID: {{ investigation.session_uuid }}"

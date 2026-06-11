@@ -1,0 +1,30 @@
+---
+- name: Retrieve investigation status (may still be IN_PROGRESS)
+  neubird.aap.investigation_result:
+    neubird_url: "{{ neubird_url }}"
+    neubird_username: "{{ neubird_username }}"
+    neubird_password: "{{ neubird_password }}"
+    session_uuid: "{{ neubird_session_uuid }}"
+  register: result
+
+- name: Verify result structure is present
+  ansible.builtin.assert:
+    that:
+      - result.changed == false
+      - result.session_uuid == neubird_session_uuid
+      - result.status is defined
+      - result.confidence is defined
+      - result.elapsed_seconds is defined
+      - result.steps is defined
+      - result.total_actions is defined
+    fail_msg: "investigation_result did not return expected fields: {{ result }}"
+
+- name: Display investigation status
+  ansible.builtin.debug:
+    msg: "Status: {{ result.status }} | Confidence: {{ result.confidence }}"
+
+- name: Show summary sections if available
+  ansible.builtin.debug:
+    msg: "{{ item.title }}: {{ (item.content | default(''))[:100] }}..."
+  loop: "{{ result.summary_sections | default([]) }}"
+  when: result.summary_sections is defined

@@ -1,0 +1,8 @@
+*.tar.gz
+tests/output/
+.ansible/
+__pycache__/
+*.pyc
+importer_result.json
+tests/integration/integration_config.yml
+docs/superpowers/

@@ -1,0 +1,31 @@
+---
+- name: Test context lookup - no context injected
+  ansible.builtin.set_fact:
+    neubird_ctx: "{{ lookup('neubird.aap.context') }}"
+
+- name: Verify empty context graceful fallback
+  ansible.builtin.assert:
+    that:
+      - neubird_ctx.investigation_id is none
+      - neubird_ctx.severity is none
+      - neubird_ctx.affected_resource is none
+      - neubird_ctx.triggered_by is none
+
+- name: Inject context and read it back
+  ansible.builtin.set_fact:
+    _neubird_context:
+      investigation_id: "inv-test-001"
+      severity: "high"
+      affected_resource: "sg-abc"
+      triggered_by: "neubird_ai"
+
+- name: Read injected context
+  ansible.builtin.set_fact:
+    neubird_ctx_injected: "{{ lookup('neubird.aap.context') }}"
+
+- name: Verify injected context is returned
+  ansible.builtin.assert:
+    that:
+      - neubird_ctx_injected.investigation_id == "inv-test-001"
+      - neubird_ctx_injected.severity == "high"
+      - neubird_ctx_injected.triggered_by == "neubird_ai"
