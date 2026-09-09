@@ -4,7 +4,7 @@ Read NeuBird investigation context from AAP job variables.
 
 ## Synopsis
 
-When NeuBird AI triggers an AAP job it passes investigation context as `_neubird_context` in the job's extra vars. This lookup plugin makes that context available inside the playbook. When the job was not triggered by NeuBird, all keys return `null`.
+When NeuBird triggers an AAP job it passes investigation context as `_neubird_context` in the job's extra vars. This lookup plugin makes that context available inside the playbook. When the job was not triggered by NeuBird, all keys return `null`.
 
 ## Returns
 

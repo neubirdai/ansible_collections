@@ -1,6 +1,6 @@
 # neubird.aap.report
 
-Report remediation results to NeuBird AI.
+Report remediation results to NeuBird.
 
 ## Synopsis
 

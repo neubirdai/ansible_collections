@@ -8,11 +8,11 @@ name: context
 short_description: Read NeuBird investigation context from AAP job variables
 version_added: "1.0.0"
 description:
-  - Returns the NeuBird investigation context injected by NeuBird AI when
+  - Returns the NeuBird investigation context injected by NeuBird when
     triggering an AAP job. Falls back gracefully when the job was not
     triggered by NeuBird (all keys are null).
 author:
-  - NeuBird AI (@neubird-ai)
+  - NeuBird (@neubird-ai)
 '''
 
 EXAMPLES = r'''

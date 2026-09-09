@@ -1,11 +1,11 @@
 namespace: neubird
 name: aap
-version: 1.1.0
+version: 1.1.1
 readme: README.md
 authors:
-  - NeuBird AI <support@neubird.ai>
+  - NeuBird <support@neubird.ai>
 description: >
-  Intelligence gateway between Ansible Automation Platform and NeuBird AI.
+  Intelligence gateway between Ansible Automation Platform and NeuBird.
   Makes any AAP job template AI-aware with reporting, safety tagging,
   context injection, pre-flight gating, and audit logging.
 license:

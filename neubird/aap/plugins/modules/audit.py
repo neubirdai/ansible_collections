@@ -12,7 +12,7 @@ module: audit
 short_description: Write a structured audit record for NeuBird-triggered remediation
 version_added: "1.0.0"
 description:
-  - Writes a structured audit record after NeuBird AI triggers a remediation
+  - Writes a structured audit record after NeuBird triggers a remediation
     action. Supports stdout, syslog, and webhook destinations.
   - Satisfies compliance requirements for automated remediation in regulated
     environments.
@@ -46,7 +46,7 @@ options:
     type: str
     required: false
 author:
-  - NeuBird AI (@neubird-ai)
+  - NeuBird (@neubird-ai)
 '''
 
 EXAMPLES = r'''

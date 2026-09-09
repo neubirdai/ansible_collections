@@ -4,14 +4,14 @@ Tagging Job Templates as Safe
 ==============================
 
 ``neubird.aap.tag_safe`` is an **administrator setup step**, not a remediation task.
-Run it once per job template to declare that NeuBird AI is permitted to trigger it
+Run it once per job template to declare that NeuBird is permitted to trigger it
 automatically.
 
 How It Works
 ------------
 
 The module writes a ``_neubird_safe`` key into the job template's ``extra_vars`` via
-the AAP REST API. NeuBird AI reads this key through its MCP connection to discover
+the AAP REST API. NeuBird reads this key through its MCP connection to discover
 which templates are approved, under what conditions, and at what rate.
 
 .. code-block:: json

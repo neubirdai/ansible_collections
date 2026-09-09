@@ -4,11 +4,11 @@ Quick Start
 ===========
 
 The ``neubird.aap`` collection is an intelligence gateway between Ansible Automation
-Platform (AAP) and NeuBird AI. It makes any existing job template AI-aware by adding
+Platform (AAP) and NeuBird. It makes any existing job template AI-aware by adding
 five components: safety tagging, context injection, pre-flight gating, structured
 reporting, and audit logging.
 
-NeuBird AI connects to AAP through AAP's MCP server. When an investigation is triggered,
+NeuBird connects to AAP through AAP's MCP server. When an investigation is triggered,
 NeuBird selects an appropriate job template, injects investigation context into the job's
 extra vars, and reads the structured result back through MCP when the job completes.
 
@@ -16,8 +16,11 @@ Requirements
 ------------
 
 - ansible-core >= 2.16.0
-- Ansible Automation Platform >= 2.4
+- Ansible Automation Platform >= 2.5
 - Python >= 3.9
+
+The ``tag_safe`` and ``preflight`` modules call the AAP controller API through
+Platform Gateway routing (``/api/controller/v2/``), introduced in AAP 2.5.
 
 Installation
 ------------

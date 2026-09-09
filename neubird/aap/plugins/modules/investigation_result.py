@@ -33,7 +33,7 @@ options:
     type: str
     required: true
 author:
-  - NeuBird AI (@neubird-ai)
+  - NeuBird (@neubird-ai)
 '''
 
 EXAMPLES = r'''

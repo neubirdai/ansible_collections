@@ -9,10 +9,10 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: report
-short_description: Report remediation results to NeuBird AI
+short_description: Report remediation results to NeuBird
 version_added: "1.0.0"
 description:
-  - Surfaces structured job execution results in a format NeuBird AI can read
+  - Surfaces structured job execution results in a format NeuBird can read
     through its MCP connection to Ansible Automation Platform.
   - Add this module near the end of any playbook NeuBird may trigger.
 options:
@@ -41,7 +41,7 @@ options:
     required: false
     default: {}
 author:
-  - NeuBird AI (@neubird-ai)
+  - NeuBird (@neubird-ai)
 '''
 
 EXAMPLES = r'''

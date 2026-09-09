@@ -4,7 +4,7 @@ Reporting Results to NeuBird
 =============================
 
 ``neubird.aap.report`` writes a structured result record at the end of a playbook.
-NeuBird AI reads this record through its MCP connection to AAP to close the
+NeuBird reads this record through its MCP connection to AAP to close the
 investigation loop — marking the investigation as resolved, failed, or unchanged.
 
 Place ``neubird.aap.report`` as the **last task** in any playbook NeuBird may trigger.

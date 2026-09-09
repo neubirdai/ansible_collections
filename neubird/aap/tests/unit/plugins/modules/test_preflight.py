@@ -112,3 +112,35 @@ def test_preflight_conflicting_jobs_fail(patch_ansible):
             preflight.main()
     assert exc.value.args[0]['checks']['conflicting_jobs'] == 'fail'
     assert exc.value.args[0]['neubird_preflight_failed'] is True
+
+
+def test_preflight_job_count_url_encodes_template_name():
+    """Template names with spaces must be percent-encoded (see v1.0.3 tag_safe fix)."""
+    import json
+    from unittest.mock import MagicMock
+    from ansible_collections.neubird.aap.plugins.modules import preflight
+    fake_resp = MagicMock()
+    fake_resp.read.return_value = json.dumps({'count': 0}).encode('utf-8')
+    with patch.object(preflight, 'open_url', return_value=fake_resp) as mock_open:
+        preflight.get_running_job_count(
+            'https://aap.example.com', 'fake-token', 'Rotate IAM Key'
+        )
+    url = mock_open.call_args[0][0]
+    assert ' ' not in url
+    assert 'job_template__name=Rotate%20IAM%20Key' in url
+
+
+def test_preflight_job_count_uses_gateway_path():
+    """AAP 2.5+ Platform Gateway routes controller endpoints under /api/controller/v2/."""
+    import json
+    from unittest.mock import MagicMock
+    from ansible_collections.neubird.aap.plugins.modules import preflight
+    fake_resp = MagicMock()
+    fake_resp.read.return_value = json.dumps({'count': 3}).encode('utf-8')
+    with patch.object(preflight, 'open_url', return_value=fake_resp) as mock_open:
+        count = preflight.get_running_job_count(
+            'https://aap.example.com/', 'fake-token', 'simple'
+        )
+    url = mock_open.call_args[0][0]
+    assert url.startswith('https://aap.example.com/api/controller/v2/jobs/')
+    assert count == 3

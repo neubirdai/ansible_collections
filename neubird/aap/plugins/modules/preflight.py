@@ -63,7 +63,7 @@ options:
     type: str
     required: false
 author:
-  - NeuBird AI (@neubird-ai)
+  - NeuBird (@neubird-ai)
 '''
 
 EXAMPLES = r'''
@@ -96,6 +96,7 @@ import socket
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import open_url
+from ansible.module_utils.six.moves.urllib.parse import quote
 
 
 def check_maintenance_window(start_str, end_str, current_time=None):
@@ -117,8 +118,8 @@ def check_host_reachable(hostname, port=22, timeout=5):
 
 
 def get_running_job_count(controller_host, controller_token, template_name):
-    url = '{0}/api/v2/jobs/?status=running&job_template__name={1}'.format(
-        controller_host.rstrip('/'), template_name
+    url = '{0}/api/controller/v2/jobs/?status=running&job_template__name={1}'.format(
+        controller_host.rstrip('/'), quote(template_name, safe='')
     )
     response = open_url(
         url,

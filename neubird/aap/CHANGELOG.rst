@@ -4,6 +4,33 @@ neubird.aap Release Notes
 
 .. contents:: Topics
 
+v1.1.1
+======
+
+Minor Changes
+-------------
+
+- Updated all documentation and module metadata to use the current company
+  name ``NeuBird`` in place of the retired ``NeuBird AI``.
+- Corrected the documented minimum Ansible Automation Platform version from
+  2.4 to 2.5. The ``tag_safe`` and ``preflight`` modules require Platform
+  Gateway routing (``/api/controller/v2/``), which AAP 2.4 does not provide.
+  ``tag_safe`` has required 2.5 since v1.0.4; the documentation had not caught up.
+
+Bugfixes
+--------
+
+- Fixed ``preflight`` module URL-encoding template names containing spaces,
+  preventing ``URL can't contain control characters`` errors. This is the same
+  fix applied to ``tag_safe`` in v1.0.3.
+- Fixed ``preflight`` module API path from ``/api/v2/`` to
+  ``/api/controller/v2/`` for compatibility with AAP 2.5+ Platform Gateway
+  routing. This is the same fix applied to ``tag_safe`` in v1.0.4.
+- Fixed ``tests/unit/conftest.py`` importing the deprecated
+  ``ansible.module_utils._text``, which aborted ``ansible-test units``
+  collection on ansible-core 2.20. Now imports ``to_bytes`` from
+  ``ansible.module_utils.common.text.converters``.
+
 v1.1.0
 ======
 
@@ -16,7 +43,7 @@ Minor Changes
 New Modules
 -----------
 
-- neubird.aap.investigate - Trigger a NeuBird AI investigation from an Ansible playbook.
+- neubird.aap.investigate - Trigger a NeuBird investigation from an Ansible playbook.
 - neubird.aap.investigation_result - Retrieve the status and findings of a NeuBird investigation.
 
 v1.0.4
@@ -66,7 +93,7 @@ v1.0.0
 New Modules
 -----------
 
-- ``neubird.aap.report`` - Report remediation results to NeuBird AI.
+- ``neubird.aap.report`` - Report remediation results to NeuBird.
 - ``neubird.aap.tag_safe`` - Mark an AAP job template as safe for NeuBird automated remediation.
 - ``neubird.aap.preflight`` - Run pre-flight safety checks before NeuBird-triggered jobs.
 - ``neubird.aap.audit`` - Write a structured audit record for NeuBird-triggered remediation.

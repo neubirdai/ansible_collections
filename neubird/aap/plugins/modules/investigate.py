@@ -9,7 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: investigate
-short_description: Trigger a NeuBird AI investigation from an Ansible playbook
+short_description: Trigger a NeuBird investigation from an Ansible playbook
 version_added: "1.1.0"
 description:
   - Authenticates with NeuBird, looks up the named project, and fires an investigation
@@ -56,7 +56,7 @@ options:
     required: false
     default: 300
 author:
-  - NeuBird AI (@neubird-ai)
+  - NeuBird (@neubird-ai)
 '''
 
 EXAMPLES = r'''

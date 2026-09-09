@@ -12,7 +12,7 @@ module: tag_safe
 short_description: Mark an AAP job template as safe for NeuBird automated remediation
 version_added: "1.0.0"
 description:
-  - Stores NeuBird safety metadata in a job template's extra_vars so NeuBird AI
+  - Stores NeuBird safety metadata in a job template's extra_vars so NeuBird
     can discover via MCP which templates are approved for automated triggering.
   - Run once per template as an admin setup step, not inside a remediation playbook.
 options:
@@ -53,7 +53,7 @@ options:
     required: false
     default: null
 author:
-  - NeuBird AI (@neubird-ai)
+  - NeuBird (@neubird-ai)
 '''
 
 EXAMPLES = r'''

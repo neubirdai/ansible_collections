@@ -4,7 +4,7 @@ Mark an AAP job template as safe for NeuBird automated remediation.
 
 ## Synopsis
 
-Run once per job template as an admin setup step. Stores NeuBird safety metadata in the template's `extra_vars` so NeuBird AI can discover via MCP which templates are approved for automated triggering and under what conditions.
+Run once per job template as an admin setup step. Stores NeuBird safety metadata in the template's `extra_vars` so NeuBird can discover via MCP which templates are approved for automated triggering and under what conditions.
 
 ## Parameters
 

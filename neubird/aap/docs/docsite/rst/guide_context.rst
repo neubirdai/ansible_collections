@@ -3,7 +3,7 @@
 Reading NeuBird Investigation Context
 ======================================
 
-When NeuBird AI triggers an AAP job, it passes investigation context as
+When NeuBird triggers an AAP job, it passes investigation context as
 ``_neubird_context`` in the job's extra vars. The ``neubird.aap.context`` lookup
 plugin makes that context available inside the playbook as a structured dict.
 
@@ -75,7 +75,7 @@ context keys are ``null``. Use the ``default`` filter to handle this cleanly:
 How Context Is Injected
 -----------------------
 
-NeuBird AI populates ``_neubird_context`` by passing it as extra vars when triggering
+NeuBird populates ``_neubird_context`` by passing it as extra vars when triggering
 the job template via the AAP API. The variable name is fixed; do not rename it. If you
 need to rename the fact for clarity, use:
 

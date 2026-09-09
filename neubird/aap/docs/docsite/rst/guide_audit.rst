@@ -118,7 +118,7 @@ at the end of every remediation playbook:
         investigation_id: "{{ neubird_ctx.investigation_id | default(omit) }}"
         destination: syslog
 
-    # Operational record — closes the loop in NeuBird AI
+    # Operational record — closes the loop in NeuBird
     - name: Report result to NeuBird
       neubird.aap.report:
         investigation_id: "{{ neubird_ctx.investigation_id | default(omit) }}"

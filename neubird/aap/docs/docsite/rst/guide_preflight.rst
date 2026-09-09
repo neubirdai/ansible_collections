@@ -5,7 +5,7 @@ Pre-Flight Safety Checks
 
 ``neubird.aap.preflight`` runs safety checks at the start of a playbook before any
 changes are made. If any check fails, the play stops immediately with a structured
-error that NeuBird AI can parse through its MCP connection.
+error that NeuBird can parse through its MCP connection.
 
 Place ``neubird.aap.preflight`` as the **first task** in any playbook tagged for
 automated remediation. It makes no changes to the system and supports check mode.
@@ -96,4 +96,4 @@ On success, ``checks`` contains a ``pass`` or ``fail`` entry for each check that
     }
 
 On failure, ``neubird_preflight_failed: true`` is set alongside the ``checks`` dict
-so NeuBird AI can distinguish a pre-flight block from other playbook failures.
+so NeuBird can distinguish a pre-flight block from other playbook failures.
