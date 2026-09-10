@@ -20,6 +20,13 @@ Minor Changes
 Bugfixes
 --------
 
+- Fixed ``tag_safe`` silently discarding a job template's existing
+  ``extra_vars`` when they were stored as YAML. AAP accepts both JSON and YAML
+  in this field and the web UI writes YAML by default, but the module parsed
+  only JSON and fell back to an empty dict on failure, so the subsequent PATCH
+  replaced every existing variable with just the NeuBird tag. The module now
+  reads both formats and fails without writing if the content cannot be parsed
+  or is not a mapping.
 - Fixed ``preflight`` module URL-encoding template names containing spaces,
   preventing ``URL can't contain control characters`` errors. This is the same
   fix applied to ``tag_safe`` in v1.0.3.

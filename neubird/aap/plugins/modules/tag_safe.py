@@ -15,6 +15,11 @@ description:
   - Stores NeuBird safety metadata in a job template's extra_vars so NeuBird
     can discover via MCP which templates are approved for automated triggering.
   - Run once per template as an admin setup step, not inside a remediation playbook.
+  - Existing extra_vars are preserved. AAP accepts both JSON and YAML in this
+    field; the module reads either and writes the merged result back as JSON,
+    so a template whose extra_vars were YAML is reformatted and any comments
+    in it are lost. The module fails without writing if the existing
+    extra_vars cannot be parsed.
 options:
   controller_host:
     description:
@@ -88,6 +93,7 @@ import json
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import open_url
 from ansible.module_utils.six.moves.urllib.parse import quote
+from ansible.module_utils.common.yaml import HAS_YAML, yaml_load
 
 
 def get_template(controller_host, controller_token, template_name):
@@ -125,6 +131,34 @@ def patch_template_extra_vars(controller_host, controller_token, template_id, ex
         validate_certs=True,
     )
     response.read()
+
+
+def parse_extra_vars(raw):
+    """Parse a job template's extra_vars string into a dict.
+
+    AAP stores extra_vars as either JSON or YAML, and the web UI writes YAML by
+    default. YAML is a superset of JSON, so one safe load handles both forms.
+
+    Raises ValueError when the content cannot be parsed or is not a mapping.
+    Callers must not fall back to an empty dict: the parsed result is merged and
+    PATCHed back, so treating unparseable content as empty would silently
+    discard every variable already on the template.
+    """
+    if not raw or not raw.strip():
+        return {}
+    if not HAS_YAML:
+        raise ValueError('PyYAML is required to read existing extra_vars')
+    try:
+        parsed = yaml_load(raw)
+    except Exception as e:
+        raise ValueError('could not parse existing extra_vars ({0})'.format(str(e)))
+    if parsed is None:
+        return {}
+    if not isinstance(parsed, dict):
+        raise ValueError(
+            'existing extra_vars is a {0}, expected a mapping'.format(type(parsed).__name__)
+        )
+    return parsed
 
 
 def build_safe_tag(environments, requires_approval_in, max_auto_runs_per_hour):
@@ -176,13 +210,15 @@ def main():
             msg='Job template "{0}" not found'.format(params['template_name'])
         )
 
-    existing_extra_vars = {}
-    raw = template.get('extra_vars', '')
-    if raw:
-        try:
-            existing_extra_vars = json.loads(raw)
-        except (ValueError, TypeError):
-            existing_extra_vars = {}
+    try:
+        existing_extra_vars = parse_extra_vars(template.get('extra_vars', ''))
+    except ValueError as e:
+        module.fail_json(
+            msg='Refusing to tag job template "{0}": {1}. Updating it would '
+                'discard the extra_vars already set on the template.'.format(
+                    params['template_name'], str(e)
+                )
+        )
 
     safe_tag = build_safe_tag(
         environments=params['environments'],
